@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+		
+	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping" />
+	
+	<!-- 加载资源文件 -->
+	<bean id="resourceBundleMessageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basenames">
+			<list>
+				<value>sys/system</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 配置数据源dataSource -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" >
+		<property name="driverClassName" value="${jdbc.connection.driverClassName}" />
+		<property name="url" value="${jdbc.connection.url}" />
+		<property name="username" value="${jdbc.connection.username}" />
+		<property name="password" value="${jdbc.connection.password}" />
+	</bean>
+	
+	<!-- 配置sessionFactory -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="packagesToScan" value="com.likg.*" />
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">${hibernate.dialect}</prop>
+				<prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+				<prop key="hibernate.current_session_context_class">thread</prop>
+				
+				<!-- 添加缓存配置 -->
+				<prop key="hibernate.cache.use_second_level_cache">${hibernate.cache.use_second_level_cache}</prop>
+				<prop key="hibernate.cache.provider_class">${hibernate.cache.provider_class}</prop>
+				<prop key="hibernate.cache.use_query_cache">${hibernate.cache.use_query_cache}</prop>
+			</props>
+		</property>
+	</bean>
+	
+	<!-- 事务管理器，使用使用于Hibernate的事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	
+	<!-- 事务拦截器 -->
+	<bean id="transactionInterceptor" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+		<!-- 事务拦截器Bean需要依赖注入一个事务管理器 -->
+		<property name="transactionManager" ref="transactionManager"/> 
+		<property name="transactionAttributes">
+			<props>
+				<prop key="get*">PROPAGATION_REQUIRED,readOnly</prop>
+				<prop key="find*">PROPAGATION_REQUIRED,readOnly</prop>
+				<prop key="create*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="save*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="edit*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="update*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="remove*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="move*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="delete*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="audit*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="release*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="export*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="import*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="check*">PROPAGATION_REQUIRED,-Exception</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- 定义BeanNameAutoProxyCreator,该Bean无需被引用，因此没有id属性，这个Bean根据事务拦截器为目标bean自动创建事务代理 -->
+	<bean class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+		<!-- 指定对满足哪些bean name的bean自动生成事务代理 -->
+		<property name="beanNames">
+			<list>
+				<value>*Service*</value>
+			</list>
+		</property>
+		<!-- 下面定义BeanNameAutoProxyCreator所需的事务拦截器 -->
+		<property name="interceptorNames">
+			<list>
+				<value>transactionInterceptor</value>
+				<!-- 此处可以增加其他新的interceptor -->
+			</list>
+		</property>
+	</bean>
+	
+	
+	<!-- 
+	<bean class="org.springframework.transaction.interceptor.TransactionAttributeSourceAdvisor">   
+		<property name="transactionInterceptor" ref="transactionInterceptor"/>
+   </bean>
+	
+	 
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="get*" read-only="true" />
+			<tx:method name="save*" propagation="REQUIRED"/> 
+   			<tx:method name="update*" propagation="REQUIRED"/>
+ 			  <tx:method name="delete*" propagation="REQUIRED"/>
+		</tx:attributes>
+	</tx:advice>
+	
+	<aop:config>
+		<aop:pointcut id="bussinessService" expression="bean(*Service*)" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="bussinessService"/>
+	</aop:config>
+	-->
+	<!-- 
+	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	 -->
+	
+	<!--<tx:annotation-driven transaction-manager="transactionManager"/>-->
+	
+	<context:property-placeholder location="/WEB-INF/conf/jdbc.properties" />
+</beans>

@@ -1,0 +1,15 @@
+
+
+
+2013-07-23
+项目名称由auth_platform改成auth
+
+
+
+引入jar包记录
+jaxen-1.1-beta-6.jar	dom4j处理xml
+
+
+
+
+

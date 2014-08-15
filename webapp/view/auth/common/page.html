@@ -1,0 +1,67 @@
+<div style="text-align: center;" id="pagination">
+</div>
+
+<script>
+function getPageHtml(){
+	var pageIndex = 11;
+	var pageCount = 11;
+	var showNum = 9; //最大显示的个数
+	var half = parseInt(showNum/2);
+	var pageHtml = '';
+	
+	var first = 1; //第一个显示数字
+	var last = 1; //最后一个显示数字
+
+	
+	//无数据
+	if(pageCount <= 0){
+		return '';
+	}
+	//不超过最大显示的个数
+	else if(pageCount <= showNum){
+		first = 1;
+		last = pageCount;
+	}
+	//超过最大显示个数
+	else{
+		//当前页在前half个之内
+		if(pageIndex <= half){
+			first = 1;
+			last = showNum;
+		}
+		//当前页在后half个之内
+		else if(pageCount-pageIndex < half){
+			first = pageCount-showNum+1;
+			last = pageCount;
+		}
+		//当前页在中间
+		else{
+			first = pageIndex-half;
+			last = pageIndex+half;
+		}
+	}
+	
+	//是否显示‘上一页’
+	if(pageIndex > 1){
+		pageHtml += '上一页';
+	}
+	
+	//循环画页数
+	for(var i=first; i<=last; i++){
+		if(pageIndex==i){
+			pageHtml += '<strong>'+i+'</strong> ';
+		}else{
+			pageHtml += '<a href="">'+i+'</a> ';
+		}
+	}
+	
+	//是否显示‘下一页’
+	if(pageCount>showNum && pageCount-pageIndex>half){
+		pageHtml += '下一页';
+	}
+
+	return pageHtml;
+}
+
+document.getElementById('pagination').innerHTML=getPageHtml();
+</script>

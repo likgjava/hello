@@ -1,0 +1,15 @@
+<XDtClass:forAllClasses>
+<XDtClass:ifHasClassTag tagName="springmvc.view" superclasses="false">
+	<XDtClass:forAllClassTags tagName="springmvc.view">
+	<XDtClass:ifDoesntHaveClassTag tagName="springmvc.view" paramName="repeat">
+	<XDtClass:ifHasClassTag tagName="springmvc.view" paramName="class">
+<XDtClass:classTagValue tagName="springmvc.view" paramName="value"/>.(class)=<XDtClass:classTagValue tagName="springmvc.view" paramName="class"/>
+	</XDtClass:ifHasClassTag>
+	<XDtClass:ifDoesntHaveClassTag tagName="springmvc.view" paramName="class">
+<XDtClass:classTagValue tagName="springmvc.view" paramName="value"/>.(class)=org.springframework.web.servlet.view.JstlView
+	</XDtClass:ifDoesntHaveClassTag>
+<XDtClass:classTagValue tagName="springmvc.view" paramName="value"/>.url=<XDtClass:classTagValue tagName="springmvc.view" paramName="url"/>
+	</XDtClass:ifDoesntHaveClassTag>
+	</XDtClass:forAllClassTags>
+</XDtClass:ifHasClassTag>
+</XDtClass:forAllClasses>

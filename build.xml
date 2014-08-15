@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="auth_platform" default="generate mvc properties config">
+	
+	<property name="src" value="src" />
+	<property name="conf" value="conf" />
+	<property name="lib" value="lib" />
+	<property name="appname" value="auth" />
+	<property name="template" value="${lib}/template" />
+	<property name="xdoclet" value="${lib}/xdoclet/" />
+	<property name="webapp" value="webapp" />
+	<property name="web-inf" value="${webapp}/WEB-INF" />
+	<property name="web-inf.classes" value="${web-inf}/classes" />
+	
+	<path id="class.path">
+		<fileset dir="${xdoclet}">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="${lib}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
+	<taskdef name="webdoclet" classname="xdoclet.modules.web.WebDocletTask" classpathref="class.path" />
+	
+	<target name="generate mvc properties config"  description="生产Spring MVC View Jsp映射配置文件  views-*.properties">
+		<echo>+-----------------------------------------------------------+</echo>
+		<echo>|            Generate the Spring MVC View Jsp               |</echo>
+		<echo>+-----------------------------------------------------------+</echo>	
+		<webdoclet destdir="${conf}/view/" excludedtags="@version,@author,@todo,@override" force="true" verbose="true">
+			<fileset dir="${src}">
+				<include name="com/likg/**/*.java" />
+			</fileset>
+			<template destinationFile="views.properties" templateFile="${template}/views-properties.xdt" subTaskName="Generate views-${appname}.properties Config..." />
+		</webdoclet>
+		<copy todir="${web-inf.classes}/view" overwrite="true">
+			<fileset dir="${conf}/view/">
+				<include name="*.properties" />
+				<include name="view*.xml" />
+			</fileset>
+		</copy>
+	</target>
+</project>

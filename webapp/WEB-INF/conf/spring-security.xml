@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+
+	<!-- 开启debug模式
+	<debug /> -->
+	
+	
+	<http pattern="/**/*.js" security="none"  />
+	<http pattern="/**/*.css" security="none" />
+	<http pattern="/**/*.jpg" security="none" />
+	<http pattern="/**/*.jpeg" security="none" />
+	<http pattern="/**/*.png" security="none" />
+	<http pattern="/**/*.gif" security="none" />
+	<http pattern="/**/*.ico" security="none" />
+	<http pattern="/**/*.swf" security="none" />
+	<http pattern="/view/resource/**" security="none" />
+	<http pattern="/view/auth/login/login.jsp" security="none" />
+	<http pattern="/to_index.jsp" security="none" />
+	<http pattern="/jcaptcha" security="none" />
+	<!--<http pattern="/to_index.jsp" security="none" />
+	<http pattern="/jcaptcha" security="none" />
+	<http pattern="/IndexViewController.do" security="none" />
+	<http pattern="/LoginController.do" security="none" />-->
+
+	<http use-expressions="true" entry-point-ref="authenticationProcessingFilterEntryPoint">
+		<!-- 实现免登陆验证 
+		<logout />
+		<remember-me />
+		<session-management invalid-session-url="/to_index.jsp">
+			<concurrency-control max-sessions="10" error-if-maximum-exceeded="true" />
+		</session-management>
+		-->
+		
+		<custom-filter ref="loginFilter" position="FORM_LOGIN_FILTER" />
+		<custom-filter ref="securityFilter" before="FILTER_SECURITY_INTERCEPTOR" />
+	</http>
+
+	<!-- 登录验证器 -->
+	<beans:bean id="loginFilter" class="com.likg.security.MyUsernamePasswordAuthenticationFilter">
+		<!-- 处理登录 -->
+		<beans:property name="filterProcessesUrl" value="/j_spring_security_check"></beans:property>
+		<beans:property name="authenticationSuccessHandler" ref="loginLogAuthenticationSuccessHandler"></beans:property>
+		<beans:property name="authenticationFailureHandler" ref="simpleUrlAuthenticationFailureHandler"></beans:property>
+		<beans:property name="authenticationManager" ref="myAuthenticationManager"></beans:property>
+
+		<beans:property name="userDaoHibernate">
+			<beans:ref local="userDaoHibernate" />
+		</beans:property>
+		<beans:property name="imageCaptchaService">
+			<beans:ref bean="captchaService" />
+		</beans:property>
+	</beans:bean>
+	<beans:bean id="loginLogAuthenticationSuccessHandler"
+		class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler">
+		<beans:property name="defaultTargetUrl" value="/LoginController.do?method=login"></beans:property>
+	</beans:bean>
+	<beans:bean id="simpleUrlAuthenticationFailureHandler"
+		class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
+		<beans:property name="defaultFailureUrl" value="/view/auth/login/login.jsp"></beans:property>
+	</beans:bean>
+
+	<!-- 认证过滤器 -->
+	<beans:bean id="securityFilter" class="com.likg.security.MySecurityFilter">
+		<!-- 用户拥有的权限 -->
+		<beans:property name="authenticationManager" ref="myAuthenticationManager" />
+		<!-- 用户是否拥有所请求资源的权限 -->
+		<beans:property name="accessDecisionManager" ref="myAccessDecisionManager" />
+		<!-- 资源与权限对应关系 -->
+		<beans:property name="securityMetadataSource" ref="mySecurityMetadataSource" />
+	</beans:bean>
+	
+	<!-- 实现了UserDetailsService的Bean -->
+	<authentication-manager alias="myAuthenticationManager">
+		<authentication-provider user-service-ref="myUserDetailServiceImpl" />
+	</authentication-manager>
+
+	<beans:bean id="myAccessDecisionManager" class="com.likg.security.MyAccessDecisionManager"></beans:bean>
+
+	<beans:bean id="mySecurityMetadataSource" class="com.likg.security.MySecurityMetadataSource">
+		<beans:constructor-arg name="resourceDaoHibernate">
+			<beans:ref local="resourceDaoHibernate" />
+		</beans:constructor-arg>
+	</beans:bean>
+
+	<beans:bean id="myUserDetailServiceImpl" class="com.likg.security.MyUserDetailServiceImpl">
+		<beans:property name="userDaoHibernate">
+			<beans:ref local="userDaoHibernate" />
+		</beans:property>
+	</beans:bean>
+
+	<beans:bean id="userDaoHibernate" class="com.likg.auth.dao.hibernate.UserDaoHibernate">
+		<beans:property name="sessionFactory" ref="sessionFactory" />
+	</beans:bean>
+	<beans:bean id="resourceDaoHibernate" class="com.likg.auth.dao.hibernate.ResourceDaoHibernate">
+		<beans:property name="sessionFactory" ref="sessionFactory" />
+	</beans:bean>
+
+	<!-- 未登录的切入点 -->
+	<beans:bean id="authenticationProcessingFilterEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+		<beans:property name="loginFormUrl" value="/view/auth/login/login.jsp"></beans:property>
+	</beans:bean>
+</beans:beans>
